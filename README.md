@@ -21,17 +21,21 @@ If you have any other questions feel free to message us on our discord channel:
 
 https://discord.gg/XFEsHGhsxc
 
-Once you feel more familiar with what we are building at the Autonomy Network, you can start brainstorming ideas (eg. NFT automation, recurring subscription payments, etc). You can even bounce ideas off of us, again just reach us on our discord. (Clear communication is an asset 👀👀)
+Once you feel more familiar with what we are building at the Autonomy Network, you can start brainstorming ideas (eg. NFT automation, recurring subscription payments, limit orders on a DEX like Kyber or Bancor (not Uniswap since that example is below ;) ), etc). You can even bounce ideas off of us, again just reach us on our discord. (Clear communication is an asset 👀👀)
 
 After you come up with an idea, scope it out to your preference and current time commitments. Submit the scope or just let us know what is the timeline of your project. (You can let us know through discord or email diego@autonomynetwork.io / james@autonomynetwork.io ). After that you can start coding.
 
 It is very important to mention that we are not looking for fully fledged projects, it can be a proof of concept or a mock project, we just want to know that you have the technical expertise and the autonomy to work with little to no supervision and make it look good at the same time. (If we like the idea and it works we will compensate you for your time, so make sure you scope it out properly).
 
+The project must:
+ - use Autonomy to automate some user action under some condition in the future
+ - use MetaMask to interact with the user's account
+ - have a nice looking UI
+
 Finally, you can submit your project by sending us the code (git repo preferred, but you can send us files too) to @caraluno on Discord. Extra points for well documented code. You can deploy it or just give us instructions to look at the project in a dev environment, a small description of what you built would be amazing. Again you can reach us on discord or email for submissions.
 
 
 Good luck, we are looking forward to your submission,
-
 
 Autonomy Network Team
 

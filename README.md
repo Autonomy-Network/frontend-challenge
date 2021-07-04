@@ -54,7 +54,7 @@ contract EthSender {
 }
 ```
 
-You would need to call `newReq` in the Registry, which is the only function that you need to care about in the frontend. The interface is:
+You would need to make and send a transaction to `newReq` in the Registry, which is the only function that you need to care about in the frontend. The interface is:
 ```
     /**
      * @notice  Creates a new request, logs the request info in an event, then saves
@@ -98,6 +98,7 @@ The logic flow would be this:
  - `payWithAUTO` would be `false`
  - 'value' would be `ethForCall` + 0.01 ETH
 Send this transaction to the blockchain - this is the 1st and only transaction that the user sends
+In this case, `ethForCall` is the amount of ETH to send to `sendEthAtTime` and therefore is how much ETH we want to send to the recipient - so this is the amount inputted by the user in the UI.
 3. When the condition is met, a bot executes the request. The bot pays the gas fees with the ETH sent with the request in 2. and any excess ETH is returned to the user. The `recipient` receives the ETH in this transaction. This is the 2nd transaction sent to the blockchain, but is not sent by the user directly.
 
 

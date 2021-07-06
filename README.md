@@ -9,8 +9,6 @@ https://autonomynetwork.medium.com
 
 Here is our contract addresses that have already been deployed to the Ropsten Network:
 
-Token Address:
-0xE3e761127cBD037E18186698a2733d1e71623ebE (probably not needed)
 Registry Address:
 0xB82Ae7779aB1742734fCE32A4b7fDBCf020F2667
 

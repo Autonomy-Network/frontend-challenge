@@ -95,7 +95,8 @@ The logic flow would be this:
  - `ethForCall` would be the amount of eth the user wants to send in the future
  - `verifySender` would be `false` since EthSender doesn't need to know who the sender is, it only cares who the recipient is
  - `payWithAUTO` would be `false`
- - 'value' would be `ethForCall` + 0.01 ETH
+ - 'value' would be `ethForCall` + 0.01 ETH. The 0.01 ETH is because more ETH needs to be sent to pay for the bot to execute the transaction. On Ropsten, 0.01 ETH should be more than enough - any excess that isn't used to pay the executing bot will get sent back to the user.
+
 Send this transaction to the blockchain - this is the 1st and only transaction that the user sends
 In this case, `ethForCall` is the amount of ETH to send to `sendEthAtTime` and therefore is how much ETH we want to send to the recipient - so this is the amount inputted by the user in the UI.
 3. When the condition is met, a bot executes the request. The bot pays the gas fees with the ETH sent with the request in 2. and any excess ETH is returned to the user. The `recipient` receives the ETH in this transaction. This is the 2nd transaction sent to the blockchain, but is not sent by the user directly.

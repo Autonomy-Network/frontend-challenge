@@ -54,7 +54,7 @@ contract EthSender {
 }
 ```
 
-You would need to make and send a transaction to `newReq` in the Registry, which is the only function that you need to care about in the frontend. The interface is:
+You would need to make and send a transaction to `newReq` in the Registry (0xB82Ae7779aB1742734fCE32A4b7fDBCf020F2667), which is the only function that you need to care about in the frontend that you actually send a transaction to. The interface is:
 ```
     /**
      * @notice  Creates a new request, logs the request info in an event, then saves

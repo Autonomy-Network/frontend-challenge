@@ -21,7 +21,7 @@ https://discord.gg/XFEsHGhsxc
 
 Once you feel more familiar with what we are building at the Autonomy Network, you can start brainstorming ideas (eg. NFT automation, recurring subscription payments, limit orders on a DEX like Kyber or Bancor (not Uniswap since that example is below ;) ), etc). You can even bounce ideas off of us, again just reach us on our discord. (Clear communication is an asset 👀👀)
 
-After you come up with an idea, scope it out to your preference and current time commitments. Submit the scope or just let us know what is the timeline of your project. (You can let us know through discord or email diego@autonomynetwork.io / james@autonomynetwork.io ). After that you can start coding.
+After you come up with an idea, scope it out to your preference and current time commitments. Submit the scope or just let us know what is the timeline of your project. After that you can start coding.
 
 It is very important to mention that we are not looking for fully fledged projects, it can be a proof of concept or a mock project, we just want to know that you have the technical expertise and the autonomy to work with little to no supervision and make it look good at the same time. (If we like the idea and it works we will compensate you for your time, so make sure you scope it out properly).
 
@@ -95,7 +95,7 @@ The logic flow would be this:
  - `ethForCall` would be the amount of eth the user wants to send in the future
  - `verifySender` would be `false` since EthSender doesn't need to know who the sender is, it only cares who the recipient is
  - `payWithAUTO` would be `false`
- - 'value' would be `ethForCall` + 0.01 ETH. The 0.01 ETH is because more ETH needs to be sent to pay for the bot to execute the transaction. On Ropsten, 0.01 ETH should be more than enough - any excess that isn't used to pay the executing bot will get sent back to the user.
+ - 'value' would be `ethForCall` + 0.01 ETH. The 0.01 ETH is because more ETH needs to be sent to pay for the bot to execute the transaction. On Ropsten, 0.01 ETH above `ethForCall` should be more than enough - any excess that isn't used to pay the executing bot will get sent back to the user.
 
 Send this transaction to the blockchain - this is the 1st and only transaction that the user sends
 In this case, `ethForCall` is the amount of ETH to send to `sendEthAtTime` and therefore is how much ETH we want to send to the recipient - so this is the amount inputted by the user in the UI.

@@ -64,12 +64,7 @@ You would need to make and send a transaction to `newReq` in the Registry (0xB82
      * @param callData  The calldata of the call that the request is to make, i.e.
      *                  the fcn identifier + inputs, encoded
      * @param ethForCall    The ETH to send with the call
-     * @param verifySender  Whether the 1st input of the calldata equals the sender. Needed
-     *                      for dapps to know who the sender is whilst ensuring that the sender intended
-     *                      that fcn and contract to be called - dapps will require that msg.sender is
-     *                      the Verified Forwarder, and only requests that have `verifySender` = true will
-     *                      be forwarded via the Verified Forwarder, so any calls coming from it are guaranteed
-     *                      to have the 1st argument be the sender
+     * @param verifySender  Set to false
      * @param payWithAUTO   Whether the sender wants to pay for the request in AUTO
      *                      or ETH. Paying in AUTO reduces the fee
      * @return id   The id of the request, equal to the index in `_hashedReqs`
@@ -111,6 +106,6 @@ Generally to keep things as simple as possible, the parameters would be:
  - `referer` can just be set to `0x00..00`
  - `callData` would be the calldata that would need to be sent to the wrapper contract. This can be seen with https://github.com/Autonomy-Network/AutoSwap-Diff/blob/923fc0feb300f429b93221c9fcbae97ef889beae/src/hooks/useSwapCallback.ts#L237
  - `ethForCall` would be 0 if no eth is being sent. If the user wanted to trade eth > token, then `ethForCall` should be the amount of eth they want to trade, in wei
- - `verifySender` would be `true` since you want the wrapper contract to know who the user is (so they can `transferFrom` funds from them and make the trade)
+ - `verifySender` would be `true` since you want the wrapper contract to know who the user is
  - `payWithAUTO` would be `false`
 The 'value' sent with the function call would have to be equal to `ethForCall` to call the target function, and also have enough eth to pay the executor bot for the eth they spent executing the request in the future, plus a small fee (30% of the total gas cost that the executor paid). So regardless of whether `ethForCall` is 0, 'value' = `ethForCall` + 0.01 ETH (depends on gas prices, but for Ropsten, 0.01 ETH is enough to cover this. Any excess ETH that is not used in the execution is returned to the user after execution has finished)

@@ -5,7 +5,7 @@ Thank you for taking the time to apply to the Autonomy Network. As we are a smal
 First, I would advise that you take a look at our website and medium:
 
 https://www.autonomynetwork.io
-https://autonomynetwork.medium.com 
+https://blog.autonomynetwork.io/how-autonomy-works-simple-6c0059a2ee89
 
 Here is our contract addresses that have already been deployed to the Ropsten Network:
 

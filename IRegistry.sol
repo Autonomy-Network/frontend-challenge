@@ -1,23 +1,40 @@
-pragma solidity ^0.8;
+pragma solidity 0.8.6;
 
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 
+/**
+* @title    Registry
+* @notice   A contract which is essentially a glorified forwarder.
+*           It essentially brings together people who want things executed,
+*           and people who want to do that execution in return for a fee.
+*           Users register the details of what they want executed, which
+*           should always revert unless their execution condition is true,
+*           and executors execute the request when the condition is true.
+*           Only a specific executor is allowed to execute requests at any
+*           given time, as determined by the StakeManager, which requires
+*           staking AUTO tokens. This is infrastructure, and an integral
+*           piece of the future of web3. It also provides the spark of life
+*           for a new form of organism - cyber life. We are the gods now.
+* @author   Quantaf1re (James Key)
+*/
 interface IRegistry {
     
     // The address vars are 20b, total 60, calldata is 4b + n*32b usually, which
-    // has a factor of 32. uint120 since the current ETH supply of ~115m can fit
-    // into that and it's the highest such that 2 * uint120 + 2 * bool is < 256b
+    // has a factor of 32. uint112 since the current ETH supply of ~115m can fit
+    // into that and it's the highest such that 2 * uint112 + 3 * bool is < 256b
     struct Request {
-        address payable requester;
+        address payable user;
         address target;
         address payable referer;
         bytes callData;
-        uint120 initEthSent;
-        uint120 ethForCall;
-        bool verifySender;
+        uint112 initEthSent;
+        uint112 ethForCall;
+        bool verifyUser;
+        bool insertFeeAmount;
         bool payWithAUTO;
+        bool isAlive;
     }
 
 
@@ -29,30 +46,82 @@ interface IRegistry {
 
     /**
      * @notice  Creates a new request, logs the request info in an event, then saves
-     *          a hash of it on-chain in `_hashedReqs`
+     *          a hash of it on-chain in `_hashedReqs`. Uses the default for whether
+     *          to pay in ETH or AUTO
      * @param target    The contract address that needs to be called
-     * @param callData  The calldata of the call that the request is to make, i.e.
-     *                  the fcn identifier + inputs, encoded
-     * @param verifySender  Whether the 1st input of the calldata equals the sender. Needed
-     *                      for dapps to know who the sender is whilst ensuring that the sender intended
-     *                      that fcn and contract to be called - dapps will require that msg.sender is
-     *                      the Verified Forwarder, and only requests that have `verifySender` = true will
-     *                      be forwarded via the Verified Forwarder, so any calls coming from it are guaranteed
-     *                      to have the 1st argument be the sender
-     * @param payWithAUTO   Whether the sender wants to pay for the request in AUTO
-     *                      or ETH. Paying in AUTO reduces the fee
-     * @param ethForCall    The ETH to send with the call
      * @param referer       The referer to get rewarded for referring the sender
      *                      to using Autonomy. Usally the address of a dapp owner
+     * @param callData  The calldata of the call that the request is to make, i.e.
+     *                  the fcn identifier + inputs, encoded
+     * @param ethForCall    The ETH to send with the call
+     * @param verifyUser  Whether the 1st input of the calldata equals the sender.
+     *                      Needed for dapps to know who the sender is whilst
+     *                      ensuring that the sender intended
+     *                      that fcn and contract to be called - dapps will
+     *                      require that msg.sender is the Verified Forwarder,
+     *                      and only requests that have `verifyUser` = true will
+     *                      be forwarded via the Verified Forwarder, so any calls
+     *                      coming from it are guaranteed to have the 1st argument
+     *                      be the sender
+     * @param insertFeeAmount     Whether the gas estimate of the executor should be inserted
+     *                      into the callData
+     * @param isAlive       Whether or not the request should be deleted after it's executed
+     *                      for the first time. If `true`, the request will exist permanently
+     *                      (tho it can be cancelled any time), therefore executing the same
+     *                      request repeatedly aslong as the request is executable,
+     *                      and can be used to create fully autonomous contracts - the
+     *                      first single-celled cyber life. We are the gods now
      * @return id   The id of the request, equal to the index in `_hashedReqs`
      */
     function newReq(
         address target,
         address payable referer,
         bytes calldata callData,
-        uint120 ethForCall,
-        bool verifySender,
-        bool payWithAUTO
+        uint112 ethForCall,
+        bool verifyUser,
+        bool insertFeeAmount,
+        bool isAlive
+    ) external payable returns (uint id);
+
+    /**
+     * @notice  Creates a new request, logs the request info in an event, then saves
+     *          a hash of it on-chain in `_hashedReqs`
+     * @param target    The contract address that needs to be called
+     * @param referer       The referer to get rewarded for referring the sender
+     *                      to using Autonomy. Usally the address of a dapp owner
+     * @param callData  The calldata of the call that the request is to make, i.e.
+     *                  the fcn identifier + inputs, encoded
+     * @param ethForCall    The ETH to send with the call
+     * @param verifyUser  Whether the 1st input of the calldata equals the sender.
+     *                      Needed for dapps to know who the sender is whilst
+     *                      ensuring that the sender intended
+     *                      that fcn and contract to be called - dapps will
+     *                      require that msg.sender is the Verified Forwarder,
+     *                      and only requests that have `verifyUser` = true will
+     *                      be forwarded via the Verified Forwarder, so any calls
+     *                      coming from it are guaranteed to have the 1st argument
+     *                      be the sender
+     * @param insertFeeAmount     Whether the gas estimate of the executor should be inserted
+     *                      into the callData
+     * @param payWithAUTO   Whether the sender wants to pay for the request in AUTO
+     *                      or ETH. Paying in AUTO reduces the fee
+     * @param isAlive       Whether or not the request should be deleted after it's executed
+     *                      for the first time. If `true`, the request will exist permanently
+     *                      (tho it can be cancelled any time), therefore executing the same
+     *                      request repeatedly aslong as the request is executable,
+     *                      and can be used to create fully autonomous contracts - the
+     *                      first single-celled cyber life. We are the gods now
+     * @return id   The id of the request, equal to the index in `_hashedReqs`
+     */
+    function newReqPaySpecific(
+        address target,
+        address payable referer,
+        bytes calldata callData,
+        uint112 ethForCall,
+        bool verifyUser,
+        bool insertFeeAmount,
+        bool payWithAUTO,
+        bool isAlive
     ) external payable returns (uint id);
 
     /**
@@ -97,7 +166,7 @@ interface IRegistry {
      *          'unverified' because when executing it, it's impossible to tell whether any
      *          ETH was initially sent with the request etc, so executing this request requires
      *          that the request which hashes to `hashedIpfsReq` has `ethForCall` = 0,
-     *          `initEthSend` = 0, `verifySender` = false, and `payWithAUTO` = true
+     *          `initEthSend` = 0, `verifyUser` = false, and `payWithAUTO` = true
      * @param id    [bytes32] The hash to save. The hashing algo isn't keccak256 like with `newReq`,
      *          it instead uses sha256 so that it's compatible with ipfs - the hash stored on-chain
      *          should be able to be used in ipfs to point to the request which hashes to `hashedIpfsReq`.
@@ -140,7 +209,7 @@ interface IRegistry {
 
     //////////////////////////////////////////////////////////////
     //                                                          //
-    //                        Hash Helpers                      //
+    //                        Bytes Helpers                     //
     //                                                          //
     //////////////////////////////////////////////////////////////
 
@@ -184,7 +253,9 @@ interface IRegistry {
      * @return r    [Request] The request as a struct
      */
     function getReqFromBytes(bytes memory rBytes) external pure returns (Request memory r);
-    
+
+    function insertToCallData(bytes calldata callData, uint expectedGas, uint startIdx) external pure returns (bytes memory);
+
 
     //////////////////////////////////////////////////////////////
     //                                                          //
@@ -192,21 +263,55 @@ interface IRegistry {
     //                                                          //
     //////////////////////////////////////////////////////////////
 
+    /**
+     * @notice      Execute a hashedReq. Calls the `target` with `callData`, then
+     *              charges the user the fee, and gives it to the executor
+     * @param id    [uint] The index of the request in `_hashedReqs`
+     * @param r     [request] The full request struct that fully describes the request.
+     *              Typically known by seeing the `HashedReqAdded` event emitted with `newReq`
+     * @param expectedGas   [uint] The gas that the executor expects the execution to cost,
+     *                      known by simulating the the execution of this tx locally off-chain.
+     *                      This can be forwarded as part of the requested call such that the
+     *                      receiving contract knows how much gas the whole execution cost and
+     *                      can do something to compensate the exact amount (e.g. as part of a trade).
+     *                      Cannot be more than 10% above the measured gas cost by the end of execution
+     * @return gasUsed      [uint] The gas that was used as part of the execution. Used to know `expectedGas`
+     */
     function executeHashedReq(
         uint id,
-        Request calldata r
+        Request calldata r,
+        uint expectedGas
     ) external returns (uint gasUsed);
 
     /**
-     * @dev validCalldata needs to be before anything that would convert it to memory
-     *      since that is persistent and would prevent validCalldata, that requries
-     *      calldata, from working. Can't do the check in _execute for the same reason
+     * @notice      Execute a hashedReqUnveri. Hashes `r`, `dataPrefix`, and `dataSuffix`
+     *              together in the same way that ipfs does such that the hash stored on-chain
+     *              is the same as the hash used to look up on ipfs to see the raw request.
+     *              Since `newHashedReqUnveri` does no verification at all since it can't,
+     *              `executeHashedReqUnveri` has to instead. There are some things it can't
+     *              know, like the amount of ETH sent in the original request call, so they're
+     *              forced to be zero
+     * @param id    [uint] The index of the request in `_hashedReqs`
+     * @param r     [request] The full request struct that fully describes the request. Typically
+     *              known by looking up the hash on ipfs
+     * @param dataPrefix    [bytes] The data prepended to the bytes form of `r` before being hashed
+     *                      in ipfs
+     * @param dataSuffix    [bytes] The data appended to the bytes form of `r` before being hashed
+     *                      in ipfs
+     * @param expectedGas   [uint] The gas that the executor expects the execution to cost,
+     *                      known by simulating the the execution of this tx locally off-chain.
+     *                      This can be forwarded as part of the requested call such that the
+     *                      receiving contract knows how much gas the whole execution cost and
+     *                      can do something to compensate the exact amount (e.g. as part of a trade).
+     *                      Cannot be more than 10% above the measured gas cost by the end of execution
+     * @return gasUsed      [uint] The gas that was used as part of the execution. Used to know `expectedGas`
      */
     function executeHashedReqUnveri(
         uint id,
         Request calldata r,
         bytes memory dataPrefix,
-        bytes memory dataSuffix
+        bytes memory dataSuffix,
+        uint expectedGas
     ) external returns (uint gasUsed);
 
 
@@ -216,11 +321,29 @@ interface IRegistry {
     //                                                          //
     //////////////////////////////////////////////////////////////
     
+    /**
+     * @notice      Execute a hashedReq. Calls the `target` with `callData`, then
+     *              charges the user the fee, and gives it to the executor
+     * @param id    [uint] The index of the request in `_hashedReqs`
+     * @param r     [request] The full request struct that fully describes the request.
+     *              Typically known by seeing the `HashedReqAdded` event emitted with `newReq`
+     */
     function cancelHashedReq(
         uint id,
         Request memory r
     ) external;
     
+    /**
+     * @notice      Execute a hashedReq. Calls the `target` with `callData`, then
+     *              charges the user the fee, and gives it to the executor
+     * @param id    [uint] The index of the request in `_hashedReqs`
+     * @param r     [request] The full request struct that fully describes the request. Typically
+     *              known by looking up the hash on ipfs
+     * @param dataPrefix    [bytes] The data prepended to the bytes form of `r` before being hashed
+     *                      in ipfs
+     * @param dataSuffix    [bytes] The data appended to the bytes form of `r` before being hashed
+     *                      in ipfs
+     */
     function cancelHashedReqUnveri(
         uint id,
         Request memory r,
@@ -235,13 +358,17 @@ interface IRegistry {
     //                                                          //
     //////////////////////////////////////////////////////////////
     
-    function getAUTO() external view returns (IERC20);
+    function getAUTOAddr() external view returns (address);
     
     function getStakeManager() external view returns (address);
 
     function getOracle() external view returns (address);
     
-    function getVerifiedForwarder() external view returns (address);
+    function getUserForwarder() external view returns (address);
+    
+    function getGasForwarder() external view returns (address);
+    
+    function getUserGasForwarder() external view returns (address);
     
     function getReqCountOf(address addr) external view returns (uint);
     

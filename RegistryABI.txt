@@ -2,13 +2,8 @@
    {
       "inputs":[
          {
-            "internalType":"contract IERC20",
-            "name":"AUTO",
-            "type":"address"
-         },
-         {
             "internalType":"contract IStakeManager",
-            "name":"staker",
+            "name":"stakeMan",
             "type":"address"
          },
          {
@@ -18,8 +13,33 @@
          },
          {
             "internalType":"contract IForwarder",
-            "name":"veriForwarder",
+            "name":"userForwarder",
             "type":"address"
+         },
+         {
+            "internalType":"contract IForwarder",
+            "name":"gasForwarder",
+            "type":"address"
+         },
+         {
+            "internalType":"contract IForwarder",
+            "name":"userGasForwarder",
+            "type":"address"
+         },
+         {
+            "internalType":"string",
+            "name":"tokenName",
+            "type":"string"
+         },
+         {
+            "internalType":"string",
+            "name":"tokenSymbol",
+            "type":"string"
+         },
+         {
+            "internalType":"uint256",
+            "name":"totalAUTOSupply",
+            "type":"uint256"
          }
       ],
       "stateMutability":"nonpayable",
@@ -36,9 +56,9 @@
             "type":"uint256"
          },
          {
-            "indexed":false,
-            "internalType":"address payable",
-            "name":"requester",
+            "indexed":true,
+            "internalType":"address",
+            "name":"user",
             "type":"address"
          },
          {
@@ -61,26 +81,38 @@
          },
          {
             "indexed":false,
-            "internalType":"uint120",
+            "internalType":"uint112",
             "name":"initEthSent",
-            "type":"uint120"
+            "type":"uint112"
          },
          {
             "indexed":false,
-            "internalType":"uint120",
+            "internalType":"uint112",
             "name":"ethForCall",
-            "type":"uint120"
+            "type":"uint112"
          },
          {
             "indexed":false,
             "internalType":"bool",
-            "name":"verifySender",
+            "name":"verifyUser",
+            "type":"bool"
+         },
+         {
+            "indexed":false,
+            "internalType":"bool",
+            "name":"insertFeeAmount",
             "type":"bool"
          },
          {
             "indexed":false,
             "internalType":"bool",
             "name":"payWithAUTO",
+            "type":"bool"
+         },
+         {
+            "indexed":false,
+            "internalType":"bool",
+            "name":"isAlive",
             "type":"bool"
          }
       ],
@@ -95,15 +127,28 @@
             "internalType":"uint256",
             "name":"id",
             "type":"uint256"
+         }
+      ],
+      "name":"HashedReqCancelled",
+      "type":"event"
+   },
+   {
+      "anonymous":false,
+      "inputs":[
+         {
+            "indexed":true,
+            "internalType":"uint256",
+            "name":"id",
+            "type":"uint256"
          },
          {
             "indexed":false,
             "internalType":"bool",
-            "name":"wasExecuted",
+            "name":"wasRemoved",
             "type":"bool"
          }
       ],
-      "name":"HashedReqRemoved",
+      "name":"HashedReqExecuted",
       "type":"event"
    },
    {
@@ -127,15 +172,28 @@
             "internalType":"uint256",
             "name":"id",
             "type":"uint256"
+         }
+      ],
+      "name":"HashedReqUnveriCancelled",
+      "type":"event"
+   },
+   {
+      "anonymous":false,
+      "inputs":[
+         {
+            "indexed":true,
+            "internalType":"uint256",
+            "name":"id",
+            "type":"uint256"
          },
          {
             "indexed":false,
             "internalType":"bool",
-            "name":"wasExecuted",
+            "name":"wasRemoved",
             "type":"bool"
          }
       ],
-      "name":"HashedReqUnveriRemoved",
+      "name":"HashedReqUnveriExecuted",
       "type":"event"
    },
    {
@@ -224,7 +282,7 @@
             "components":[
                {
                   "internalType":"address payable",
-                  "name":"requester",
+                  "name":"user",
                   "type":"address"
                },
                {
@@ -243,23 +301,33 @@
                   "type":"bytes"
                },
                {
-                  "internalType":"uint120",
+                  "internalType":"uint112",
                   "name":"initEthSent",
-                  "type":"uint120"
+                  "type":"uint112"
                },
                {
-                  "internalType":"uint120",
+                  "internalType":"uint112",
                   "name":"ethForCall",
-                  "type":"uint120"
+                  "type":"uint112"
                },
                {
                   "internalType":"bool",
-                  "name":"verifySender",
+                  "name":"verifyUser",
+                  "type":"bool"
+               },
+               {
+                  "internalType":"bool",
+                  "name":"insertFeeAmount",
                   "type":"bool"
                },
                {
                   "internalType":"bool",
                   "name":"payWithAUTO",
+                  "type":"bool"
+               },
+               {
+                  "internalType":"bool",
+                  "name":"isAlive",
                   "type":"bool"
                }
             ],
@@ -286,7 +354,7 @@
             "components":[
                {
                   "internalType":"address payable",
-                  "name":"requester",
+                  "name":"user",
                   "type":"address"
                },
                {
@@ -305,23 +373,33 @@
                   "type":"bytes"
                },
                {
-                  "internalType":"uint120",
+                  "internalType":"uint112",
                   "name":"initEthSent",
-                  "type":"uint120"
+                  "type":"uint112"
                },
                {
-                  "internalType":"uint120",
+                  "internalType":"uint112",
                   "name":"ethForCall",
-                  "type":"uint120"
+                  "type":"uint112"
                },
                {
                   "internalType":"bool",
-                  "name":"verifySender",
+                  "name":"verifyUser",
+                  "type":"bool"
+               },
+               {
+                  "internalType":"bool",
+                  "name":"insertFeeAmount",
                   "type":"bool"
                },
                {
                   "internalType":"bool",
                   "name":"payWithAUTO",
+                  "type":"bool"
+               },
+               {
+                  "internalType":"bool",
+                  "name":"isAlive",
                   "type":"bool"
                }
             ],
@@ -358,7 +436,7 @@
             "components":[
                {
                   "internalType":"address payable",
-                  "name":"requester",
+                  "name":"user",
                   "type":"address"
                },
                {
@@ -377,29 +455,44 @@
                   "type":"bytes"
                },
                {
-                  "internalType":"uint120",
+                  "internalType":"uint112",
                   "name":"initEthSent",
-                  "type":"uint120"
+                  "type":"uint112"
                },
                {
-                  "internalType":"uint120",
+                  "internalType":"uint112",
                   "name":"ethForCall",
-                  "type":"uint120"
+                  "type":"uint112"
                },
                {
                   "internalType":"bool",
-                  "name":"verifySender",
+                  "name":"verifyUser",
+                  "type":"bool"
+               },
+               {
+                  "internalType":"bool",
+                  "name":"insertFeeAmount",
                   "type":"bool"
                },
                {
                   "internalType":"bool",
                   "name":"payWithAUTO",
                   "type":"bool"
+               },
+               {
+                  "internalType":"bool",
+                  "name":"isAlive",
+                  "type":"bool"
                }
             ],
             "internalType":"struct IRegistry.Request",
             "name":"r",
             "type":"tuple"
+         },
+         {
+            "internalType":"uint256",
+            "name":"expectedGas",
+            "type":"uint256"
          }
       ],
       "name":"executeHashedReq",
@@ -424,7 +517,7 @@
             "components":[
                {
                   "internalType":"address payable",
-                  "name":"requester",
+                  "name":"user",
                   "type":"address"
                },
                {
@@ -443,23 +536,33 @@
                   "type":"bytes"
                },
                {
-                  "internalType":"uint120",
+                  "internalType":"uint112",
                   "name":"initEthSent",
-                  "type":"uint120"
+                  "type":"uint112"
                },
                {
-                  "internalType":"uint120",
+                  "internalType":"uint112",
                   "name":"ethForCall",
-                  "type":"uint120"
+                  "type":"uint112"
                },
                {
                   "internalType":"bool",
-                  "name":"verifySender",
+                  "name":"verifyUser",
+                  "type":"bool"
+               },
+               {
+                  "internalType":"bool",
+                  "name":"insertFeeAmount",
                   "type":"bool"
                },
                {
                   "internalType":"bool",
                   "name":"payWithAUTO",
+                  "type":"bool"
+               },
+               {
+                  "internalType":"bool",
+                  "name":"isAlive",
                   "type":"bool"
                }
             ],
@@ -476,6 +579,11 @@
             "internalType":"bytes",
             "name":"dataSuffix",
             "type":"bytes"
+         },
+         {
+            "internalType":"uint256",
+            "name":"expectedGas",
+            "type":"uint256"
          }
       ],
       "name":"executeHashedReqUnveri",
@@ -493,10 +601,10 @@
       "inputs":[
          
       ],
-      "name":"getAUTO",
+      "name":"getAUTOAddr",
       "outputs":[
          {
-            "internalType":"contract IERC20",
+            "internalType":"address",
             "name":"",
             "type":"address"
          }
@@ -518,6 +626,21 @@
             "internalType":"uint256",
             "name":"",
             "type":"uint256"
+         }
+      ],
+      "stateMutability":"view",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         
+      ],
+      "name":"getGasForwarder",
+      "outputs":[
+         {
+            "internalType":"address",
+            "name":"",
+            "type":"address"
          }
       ],
       "stateMutability":"view",
@@ -767,7 +890,7 @@
             "components":[
                {
                   "internalType":"address payable",
-                  "name":"requester",
+                  "name":"user",
                   "type":"address"
                },
                {
@@ -786,23 +909,33 @@
                   "type":"bytes"
                },
                {
-                  "internalType":"uint120",
+                  "internalType":"uint112",
                   "name":"initEthSent",
-                  "type":"uint120"
+                  "type":"uint112"
                },
                {
-                  "internalType":"uint120",
+                  "internalType":"uint112",
                   "name":"ethForCall",
-                  "type":"uint120"
+                  "type":"uint112"
                },
                {
                   "internalType":"bool",
-                  "name":"verifySender",
+                  "name":"verifyUser",
+                  "type":"bool"
+               },
+               {
+                  "internalType":"bool",
+                  "name":"insertFeeAmount",
                   "type":"bool"
                },
                {
                   "internalType":"bool",
                   "name":"payWithAUTO",
+                  "type":"bool"
+               },
+               {
+                  "internalType":"bool",
+                  "name":"isAlive",
                   "type":"bool"
                }
             ],
@@ -855,7 +988,7 @@
             "components":[
                {
                   "internalType":"address payable",
-                  "name":"requester",
+                  "name":"user",
                   "type":"address"
                },
                {
@@ -874,23 +1007,33 @@
                   "type":"bytes"
                },
                {
-                  "internalType":"uint120",
+                  "internalType":"uint112",
                   "name":"initEthSent",
-                  "type":"uint120"
+                  "type":"uint112"
                },
                {
-                  "internalType":"uint120",
+                  "internalType":"uint112",
                   "name":"ethForCall",
-                  "type":"uint120"
+                  "type":"uint112"
                },
                {
                   "internalType":"bool",
-                  "name":"verifySender",
+                  "name":"verifyUser",
+                  "type":"bool"
+               },
+               {
+                  "internalType":"bool",
+                  "name":"insertFeeAmount",
                   "type":"bool"
                },
                {
                   "internalType":"bool",
                   "name":"payWithAUTO",
+                  "type":"bool"
+               },
+               {
+                  "internalType":"bool",
+                  "name":"isAlive",
                   "type":"bool"
                }
             ],
@@ -921,7 +1064,7 @@
       "inputs":[
          
       ],
-      "name":"getVerifiedForwarder",
+      "name":"getUserForwarder",
       "outputs":[
          {
             "internalType":"address",
@@ -930,6 +1073,50 @@
          }
       ],
       "stateMutability":"view",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         
+      ],
+      "name":"getUserGasForwarder",
+      "outputs":[
+         {
+            "internalType":"address",
+            "name":"",
+            "type":"address"
+         }
+      ],
+      "stateMutability":"view",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         {
+            "internalType":"bytes",
+            "name":"callData",
+            "type":"bytes"
+         },
+         {
+            "internalType":"uint256",
+            "name":"expectedGas",
+            "type":"uint256"
+         },
+         {
+            "internalType":"uint256",
+            "name":"startIdx",
+            "type":"uint256"
+         }
+      ],
+      "name":"insertToCallData",
+      "outputs":[
+         {
+            "internalType":"bytes",
+            "name":"",
+            "type":"bytes"
+         }
+      ],
+      "stateMutability":"pure",
       "type":"function"
    },
    {
@@ -969,22 +1156,81 @@
             "type":"bytes"
          },
          {
-            "internalType":"uint120",
+            "internalType":"uint112",
             "name":"ethForCall",
-            "type":"uint120"
+            "type":"uint112"
          },
          {
             "internalType":"bool",
-            "name":"verifySender",
+            "name":"verifyUser",
+            "type":"bool"
+         },
+         {
+            "internalType":"bool",
+            "name":"insertFeeAmount",
+            "type":"bool"
+         },
+         {
+            "internalType":"bool",
+            "name":"isAlive",
+            "type":"bool"
+         }
+      ],
+      "name":"newReq",
+      "outputs":[
+         {
+            "internalType":"uint256",
+            "name":"id",
+            "type":"uint256"
+         }
+      ],
+      "stateMutability":"payable",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         {
+            "internalType":"address",
+            "name":"target",
+            "type":"address"
+         },
+         {
+            "internalType":"address payable",
+            "name":"referer",
+            "type":"address"
+         },
+         {
+            "internalType":"bytes",
+            "name":"callData",
+            "type":"bytes"
+         },
+         {
+            "internalType":"uint112",
+            "name":"ethForCall",
+            "type":"uint112"
+         },
+         {
+            "internalType":"bool",
+            "name":"verifyUser",
+            "type":"bool"
+         },
+         {
+            "internalType":"bool",
+            "name":"insertFeeAmount",
             "type":"bool"
          },
          {
             "internalType":"bool",
             "name":"payWithAUTO",
             "type":"bool"
+         },
+         {
+            "internalType":"bool",
+            "name":"isAlive",
+            "type":"bool"
          }
       ],
-      "name":"newReq",
+      "name":"newReqPaySpecific",
       "outputs":[
          {
             "internalType":"uint256",

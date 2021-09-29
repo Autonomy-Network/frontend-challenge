@@ -10,7 +10,7 @@ https://blog.autonomynetwork.io/how-autonomy-works-simple-6c0059a2ee89
 Here is our contract addresses that have already been deployed to the Ropsten Network:
 
 Registry Address:
-0xB82Ae7779aB1742734fCE32A4b7fDBCf020F2667
+0x3C901dc595105934D61DB70C2170D3a6834Cb8B7
 
 If you need any further information or need some smart contracts done for your project please contact 
 @quantafire on the Autonomy discord.
@@ -53,29 +53,45 @@ contract EthSender {
 ```
 A deployed instance of the above contract is here https://ropsten.etherscan.io/address/0xfa0a8b60b2af537dec9832f72fd233e93e4c8463
 
-You would need to make and send a transaction to `newReq` in the Registry (0xB82Ae7779aB1742734fCE32A4b7fDBCf020F2667), which is the only function that you need to care about in the frontend that you actually send a transaction to. The interface is:
+You would need to make and send a transaction to `newReq` in the Registry (0x3C901dc595105934D61DB70C2170D3a6834Cb8B7), which is the only function that you need to care about in the frontend that you actually send a transaction to. The interface is:
 ```
     /**
      * @notice  Creates a new request, logs the request info in an event, then saves
-     *          a hash of it on-chain in `_hashedReqs`
+     *          a hash of it on-chain in `_hashedReqs`. Uses the default for whether
+     *          to pay in ETH or AUTO
      * @param target    The contract address that needs to be called
      * @param referer       The referer to get rewarded for referring the sender
      *                      to using Autonomy. Usally the address of a dapp owner
      * @param callData  The calldata of the call that the request is to make, i.e.
      *                  the fcn identifier + inputs, encoded
      * @param ethForCall    The ETH to send with the call
-     * @param verifySender  Set to false
-     * @param payWithAUTO   Whether the sender wants to pay for the request in AUTO
-     *                      or ETH. Paying in AUTO reduces the fee
+     * @param verifyUser  Whether the 1st input of the calldata equals the sender.
+     *                      Needed for dapps to know who the sender is whilst
+     *                      ensuring that the sender intended
+     *                      that fcn and contract to be called - dapps will
+     *                      require that msg.sender is the Verified Forwarder,
+     *                      and only requests that have `verifyUser` = true will
+     *                      be forwarded via the Verified Forwarder, so any calls
+     *                      coming from it are guaranteed to have the 1st argument
+     *                      be the sender
+     * @param insertFeeAmount     Whether the gas estimate of the executor should be inserted
+     *                      into the callData
+     * @param isAlive       Whether or not the request should be deleted after it's executed
+     *                      for the first time. If `true`, the request will exist permanently
+     *                      (tho it can be cancelled any time), therefore executing the same
+     *                      request repeatedly aslong as the request is executable,
+     *                      and can be used to create fully autonomous contracts - the
+     *                      first single-celled cyber life. We are the gods now
      * @return id   The id of the request, equal to the index in `_hashedReqs`
      */
     function newReq(
         address target,
         address payable referer,
         bytes calldata callData,
-        uint120 ethForCall,
-        bool verifySender,
-        bool payWithAUTO
+        uint112 ethForCall,
+        bool verifyUser,
+        bool insertFeeAmount,
+        bool isAlive
     ) external payable returns (uint id);
 ```
 
@@ -88,7 +104,8 @@ The logic flow would be this:
  - `referer` can just be set to `0x00..00`
  - `callData` would be the `callData` generated in step 1.
  - `ethForCall` would be the amount of eth the user wants to send in the future
- - `verifySender` would be `false` since EthSender doesn't need to know who the sender is, it only cares who the recipient is
+ - `verifyUser` would be `false` since EthSender doesn't need to know who the sender is, it only cares who the recipient is
+ - `insertFeeAmount` would be `false`
  - `payWithAUTO` would be `false`
  - 'value' would be `ethForCall` + 0.01 ETH. The 0.01 ETH is because more ETH needs to be sent to pay for the bot to execute the transaction. On Ropsten, 0.01 ETH above `ethForCall` should be more than enough - any excess that isn't used to pay the executing bot will get sent back to the user.
 
@@ -106,6 +123,7 @@ Generally to keep things as simple as possible, the parameters would be:
  - `referer` can just be set to `0x00..00`
  - `callData` would be the calldata that would need to be sent to the wrapper contract. This can be seen with https://github.com/Autonomy-Network/AutoSwap-Diff/blob/923fc0feb300f429b93221c9fcbae97ef889beae/src/hooks/useSwapCallback.ts#L237
  - `ethForCall` would be 0 if no eth is being sent. If the user wanted to trade eth > token, then `ethForCall` should be the amount of eth they want to trade, in wei
- - `verifySender` would be `true` since you want the wrapper contract to know who the user is
+ - `verifyUser` would be `true` since you want the wrapper contract to know who the user is
+ - `insertFeeAmount` would be `false` in the simple case of pre-paying for the execution
  - `payWithAUTO` would be `false`
 The 'value' sent with the function call would have to be equal to `ethForCall` to call the target function, and also have enough eth to pay the executor bot for the eth they spent executing the request in the future, plus a small fee (30% of the total gas cost that the executor paid). So regardless of whether `ethForCall` is 0, 'value' = `ethForCall` + 0.01 ETH (depends on gas prices, but for Ropsten, 0.01 ETH is enough to cover this. Any excess ETH that is not used in the execution is returned to the user after execution has finished)
